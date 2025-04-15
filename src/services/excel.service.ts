@@ -14,7 +14,7 @@ export async function importExcel(filePath: string) {
   const userSheet = workbook.getWorksheet('Sheet1');
   if(!userSheet) return;
 
-  for (let i = 3; i <= userSheet.rowCount; i++) {
+  for (let i = 3; i <= 5; i++) {
     const row = userSheet.getRow(i);
     const rawFolderPath = cleanPath(row.getCell('B').value);
     const rawFileName = cleanPath(row.getCell('C').value);
@@ -25,7 +25,7 @@ export async function importExcel(filePath: string) {
     // 프로젝트 루트에서 audio_sample 폴더 기준으로 상대 경로 생성
     // https://d3uzxe4z0iimhg.cloudfront.net/sound-library/Future_Rave/samples/[bgnoise_noise 01]bpm=128,bar=8.ogg
     const projectRoot = path.resolve(__dirname, '../../..'); // src 폴더 기준 한 단계 위
-    const audioBasePath = path.join(projectRoot, 'audio_sample');
+    const audioBasePath = path.join(projectRoot, 'audio_library');
     const fullPath = path.resolve(audioBasePath, rawFolderPath, rawFileName);
     const url = path.join('sound-library', rawFolderPath, rawFileName);
 
