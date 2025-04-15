@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Excel Import",
+      "program": "${workspaceFolder}/src/index.ts",
+      "args": ["./data/MUSIAONE_SoundLibrary.xlsx"], // 필요 시 엑셀 경로 수정
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "env": {
+        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
+      },
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "audio-sample-importer-tool",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.27",
+    "@types/node": "^22.14.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "exceljs": "^4.4.0",
+    "fluent-ffmpeg": "^2.1.3",
+    "prisma": "^6.6.0",
+    "wav-decoder": "^1.3.0",
+    "winston": "^3.17.0"
+  }
+}
