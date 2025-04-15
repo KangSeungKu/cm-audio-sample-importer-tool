@@ -1,0 +1,666 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "./generated/client1"
+  previewFeatures = ["extendedIndexes", "fullTextIndex", "fullTextSearch"]
+  binaryTargets   = ["native", "darwin-arm64", "linux-arm64-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model account {
+  id                 String   @id
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime
+  id_token           String?  @db.Text
+  oauth_token        String?
+  oauth_token_secret String?
+  scope              String?
+  session_state      String?
+  token_type         String?
+  expires_at         Int?
+  user               user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId], map: "userId")
+}
+
+model asks {
+  id      Int      @id @default(autoincrement())
+  email   String   @db.Text
+  text    String   @db.Text
+  image   String   @db.MediumText
+  date    DateTime @default(now()) @db.Timestamp(0)
+  comment String?  @db.LongText
+  status  String?  @default("inquired") @db.Text
+
+  @@fulltext([email, text, comment, status], map: "textIndex")
+}
+
+model audioSample {
+  id                   Int                    @id @default(autoincrement())
+  title                String
+  artist               String?
+  album                String?
+  version              String?
+  duration             Int?
+  fileName             String?
+  url                  String?
+  key                  String?
+  bpm                  Int?
+  releaseDate          DateTime?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime?
+  peaks                String?                @db.LongText
+  audioSampleSubFilter audioSampleSubFilter[]
+}
+
+model audioSampleSubFilter {
+  audioSampleId Int
+  subFilterId   Int
+  audioSample   audioSample @relation(fields: [audioSampleId], references: [id])
+  subFilter     subFilter   @relation(fields: [subFilterId], references: [id])
+
+  @@id([audioSampleId, subFilterId])
+  @@index([subFilterId], map: "audioSampleSubFilter_subFilterId_fkey")
+}
+
+model basicMode_project {
+  id                Int                 @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  userId            String              @default("")
+  email             String?
+  projectId         String              @unique(map: "projectId_UNIQUE")
+  projectData       String?             @db.LongText
+  createdAt         DateTime?           @default(now()) @db.DateTime(0)
+  updatedAt         DateTime?           @default(now()) @db.DateTime(0)
+  project_user_file project_user_file[]
+}
+
+model blog {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  title      String?  @db.Text
+  url        String?  @db.Text
+  thumbnail  String?  @db.Text
+  initPost   DateTime @default(now()) @db.Timestamp(0)
+  updatePost DateTime @default(now()) @db.Timestamp(0)
+  type       String?  @db.Text
+  language   String?  @db.Text
+  product    String?  @db.Text
+}
+
+model cancellationQueue {
+  id                 String    @id
+  name               String?
+  email              String?   @unique(map: "user_email_key")
+  country            String?   @db.Text
+  platform           String?   @db.Text
+  language           String?   @db.Text
+  createdAt          DateTime  @default(now())
+  nextBillingAt      DateTime?
+  canceledAt         DateTime  @default(now()) @db.DateTime(0)
+  plan               String?
+  pgProvider         String?
+  currency           String?
+  price              String?
+  imp_uid            String?
+  customer_uid       String?
+  merchant_uid       String?
+  subscriptionDetail String?   @db.LongText
+  composeCount       Int       @default(0)
+  visitAt            DateTime? @default(now()) @db.DateTime(0)
+  promotion          String?
+}
+
+model checkOutCredit {
+  id                 Int       @id @default(autoincrement())
+  userId             String
+  customer_uid       String
+  customer_uid_usage String?
+  imp_uid            String
+  merchant_uid       String    @unique(map: "subscription_merchant_uid_key")
+  credit             String    @default("")
+  price              String
+  apply_num          String?
+  channel            String
+  currency           String
+  upgrade_reason     String?
+  upgraded_at        DateTime? @default(now()) @db.Timestamp(0)
+  pay_method         String?
+  pg_id              String?
+  pg_provider        String
+  paid_at            Int?
+  pg_tid             String?
+  started_at         Int
+  status             String
+  createdAt          DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt          DateTime  @default(now()) @db.Timestamp(0)
+  response           String    @db.LongText
+}
+
+model compensation_history {
+  id                Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  userId            String    @default("")
+  email             String?
+  compensation_type String    @db.Text
+  paidCreditConst   String    @db.Text
+  dailyConst        String    @db.Text
+  description       String?   @db.LongText
+  processed_by      String    @default("admin") @db.Text
+  createdAt         DateTime? @default(now()) @db.DateTime(0)
+}
+
+model composes {
+  idx       Int      @id @default(autoincrement())
+  user      String?  @db.Text
+  scale     String   @db.Text
+  scaleMode String   @db.Text
+  chords    String   @db.Text
+  melodyIdx Int
+  knobs     String   @db.Text
+  melody    String   @db.Text
+  time      DateTime @default(now()) @db.Timestamp(0)
+}
+
+model discountHistory {
+  id      Int      @id @default(autoincrement()) @db.UnsignedInt
+  code    String   @default("")
+  userId  String   @default("")
+  email   String?
+  type    String   @default("")
+  channel String?
+  url     String?  @db.Text
+  locale  String   @default("")
+  rate    Float
+  usedAt  DateTime @default(now()) @db.DateTime(0)
+}
+
+model evom_midi {
+  idx        Int    @id @default(autoincrement())
+  expression String @db.Text
+  process    Int
+}
+
+model exhibit_list {
+  idx     Int    @id @default(autoincrement()) @db.UnsignedInt
+  chord   String @db.Text
+  melody  String @db.Text
+  process Int    @default(0)
+}
+
+model exhibit_list_2202 {
+  idx     Int    @id @default(autoincrement()) @db.UnsignedInt
+  chord   String @db.Text
+  melody  String @db.Text
+  process Int    @default(0)
+}
+
+model feedbacks {
+  idx  Int      @id @default(autoincrement())
+  user String   @db.Text
+  data String   @db.Text
+  star Int
+  step Int?
+  time DateTime @default(now()) @db.Timestamp(0)
+}
+
+model feedbacks_cancelled {
+  id    Int      @id @default(autoincrement()) @db.UnsignedInt
+  uid   String   @default("")
+  email String?
+  data  String?  @db.LongText
+  time  DateTime @default(now()) @db.Timestamp(0)
+}
+
+model filterCategory {
+  id        Int         @id @default(autoincrement())
+  type      String      @unique
+  name      String?
+  order     Int?
+  isActive  Boolean     @default(true)
+  subFilter subFilter[]
+}
+
+model inquiry {
+  id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  parent_id   String
+  email       String?  @db.Text
+  product     String?  @db.Text
+  subFunction String?  @db.Text
+  subject     String?  @db.Text
+  content     String?  @db.LongText
+  comment     String?  @db.LongText
+  date        DateTime @default(now()) @db.Timestamp(0)
+  status      String?  @default("inquired") @db.Text
+
+  @@fulltext([parent_id, email, subject, content, comment, status], map: "textIndex")
+}
+
+model musiaoneRequest {
+  id                Int      @id @default(autoincrement())
+  userId            String
+  requestType       String   @db.Text
+  ms                String?  @db.Text
+  genre             String?  @db.Text
+  inst_name         String?  @db.Text
+  num_of_bars       Int?
+  scale_root        String?  @db.Text
+  scale_mood        String?  @db.Text
+  bpm               Int?
+  tracks            String?  @db.Text
+  client            String   @db.Text
+  initValues        String?  @db.Text
+  barOption         Int?
+  language          String?  @db.Text
+  userMessage       String?  @db.Text
+  data              String   @db.Text
+  chord_progression String?  @db.Text
+  format            String?  @db.Text
+  track_info        String?  @db.Text
+  config            String?  @db.Text
+  content           String?  @db.Text
+  time              DateTime @default(now()) @db.Timestamp(0)
+  test              Boolean  @default(false)
+  useCredit         Int      @default(0)
+  user              user     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "musiaoneRequest_userId_fkey")
+}
+
+model notice {
+  id          Int           @id @default(autoincrement()) @db.UnsignedInt
+  authorId    String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now())
+  isImportant Boolean       @default(false)
+  status      notice_status @default(ACTIVE)
+  content     String        @db.LongText
+  product     String        @default("[\"All\"]") @db.LongText
+  user        user          @relation(fields: [authorId], references: [email])
+
+  @@index([authorId], map: "notice_authorId_fkey")
+}
+
+model project_user_file {
+  id                String            @id @unique(map: "id_UNIQUE")
+  fileKey           String?
+  url               String?
+  filename          String?
+  mimetype          String?
+  extension         String?
+  size              Int?
+  projectId         String
+  createdAt         DateTime?         @default(now())
+  deletedAt         DateTime?
+  basicMode_project basicMode_project @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  @@index([projectId], map: "basicMode_project_fkey")
+}
+
+model qna {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  question   String?  @db.Text
+  answer     String?  @db.LongText
+  initPost   DateTime @default(now()) @db.Timestamp(0)
+  updatePost DateTime @default(now()) @db.Timestamp(0)
+}
+
+model quickMode_project {
+  id          Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  userId      String    @default("")
+  email       String?
+  projectId   String    @unique(map: "projectId_UNIQUE")
+  projectData String?   @db.LongText
+  createdAt   DateTime? @default(now()) @db.DateTime(0)
+  updatedAt   DateTime? @default(now()) @db.DateTime(0)
+}
+
+model session {
+  id           String   @id
+  userId       String
+  expires      DateTime
+  sessionToken String   @unique
+  accessToken  String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "userId")
+}
+
+model sessions {
+  session_id String  @id @db.VarChar(128)
+  expires    Int     @db.UnsignedInt
+  data       String? @db.MediumText
+}
+
+model subFilter {
+  id                   Int                    @id @default(autoincrement())
+  type                 String                 @unique
+  name                 String?
+  order                Int?
+  categoryId           Int
+  isActive             Boolean                @default(true)
+  audioSampleSubFilter audioSampleSubFilter[]
+  filterCategory       filterCategory         @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId], map: "subFilter_categoryId_fkey")
+}
+
+model subscription {
+  id                 Int       @id @default(autoincrement())
+  userId             String
+  customer_uid       String
+  customer_uid_usage String?
+  imp_uid            String
+  merchant_uid       String    @unique
+  product            String
+  productName        String?
+  price              String
+  apply_num          String?
+  channel            String
+  currency           String
+  upgrade_reason     String?
+  upgraded_at        DateTime? @default(now()) @db.Timestamp(0)
+  pay_method         String?
+  pg_id              String?
+  pg_provider        String
+  paid_at            DateTime? @db.Timestamp(0)
+  pg_tid             String?
+  started_at         DateTime? @db.Timestamp(0)
+  status             String
+  createdAt          DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt          DateTime  @default(now()) @db.Timestamp(0)
+  response           String    @db.LongText
+  promotion          String?
+}
+
+model subscription_cancelled {
+  id                 Int       @id @default(autoincrement())
+  userId             String
+  customer_uid       String
+  customer_uid_usage String?
+  imp_uid            String
+  merchant_uid       String    @unique
+  product            String
+  productName        String?
+  price              String
+  apply_num          String?
+  channel            String
+  currency           String
+  upgrade_reason     String?
+  upgraded_at        DateTime? @default(now()) @db.Timestamp(0)
+  pay_method         String?
+  pg_id              String?
+  pg_provider        String
+  paid_at            DateTime? @db.Timestamp(0)
+  pg_tid             String?
+  started_at         DateTime? @db.Timestamp(0)
+  status             String
+  createdAt          DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt          DateTime  @default(now()) @db.Timestamp(0)
+  response           String    @db.LongText
+  promotion          String?
+}
+
+model support {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  key        Int?
+  language   String?  @db.Text
+  subject    String?  @db.Text
+  title      String?  @db.Text
+  detail     String?  @db.LongText
+  initPost   DateTime @default(now()) @db.Timestamp(0)
+  updatePost DateTime @default(now()) @db.Timestamp(0)
+  link       String?  @db.Text
+  url        String?  @db.Text
+}
+
+model survey {
+  id             Int              @id @default(autoincrement())
+  title          String
+  description    String?
+  startDate      DateTime?
+  endDate        DateTime?
+  status         String           @default("ACTIVE")
+  createdAt      DateTime?        @default(now())
+  surveyQuestion surveyQuestion[]
+  surveyResponse surveyResponse[]
+}
+
+model surveyQuestion {
+  id                   Int                    @id @default(autoincrement())
+  surveyId             Int
+  questionText         String?
+  description          String?
+  order                Int?
+  type                 String?                @default("normal")
+  survey               survey                 @relation(fields: [surveyId], references: [id], map: "survey_v2_question_surveyId_fkey")
+  surveyQuestionChoice surveyQuestionChoice[]
+  surveyResponseDetail surveyResponseDetail[]
+
+  @@index([surveyId], map: "survey_v2_question_surveyId_fkey")
+}
+
+model surveyQuestionChoice {
+  id                   Int                    @id @default(autoincrement())
+  questionId           Int
+  choiceText           String?
+  description          String?
+  choiceType           String?                @default("CHOICE")
+  subText              String?
+  order                Int?
+  iconType             String?
+  surveyQuestion       surveyQuestion         @relation(fields: [questionId], references: [id], map: "survey_v2_questionChoice_questionId_fkey")
+  surveyQuestionOption surveyQuestionOption[]
+  surveyResponseDetail surveyResponseDetail[]
+
+  @@index([questionId], map: "survey_v2_questionChoice_questionId_fkey")
+}
+
+model surveyQuestionOption {
+  id                   Int                    @id @default(autoincrement())
+  choiceId             Int
+  description          String?
+  optionText           String?
+  optionType           String?                @default("CHOICE")
+  order                Int?
+  surveyQuestionChoice surveyQuestionChoice   @relation(fields: [choiceId], references: [id], map: "survey_v2_questionOption_choiceId_fkey")
+  surveyResponseDetail surveyResponseDetail[]
+
+  @@index([choiceId], map: "survey_v2_questionOption_choiceId_fkey")
+}
+
+model surveyResponse {
+  id                   Int                    @id @default(autoincrement())
+  surveyId             Int
+  userId               String
+  submittedAt          DateTime?              @default(now())
+  survey               survey                 @relation(fields: [surveyId], references: [id], map: "survey_v2_response_surveyId_fkey")
+  surveyResponseDetail surveyResponseDetail[]
+
+  @@index([surveyId], map: "survey_v2_response_surveyId_fkey")
+}
+
+model surveyResponseDetail {
+  id                   Int                   @id @default(autoincrement())
+  responseId           Int
+  questionId           Int
+  choiceId             Int?
+  answerText           String?
+  optionId             Int?
+  surveyQuestionChoice surveyQuestionChoice? @relation(fields: [choiceId], references: [id], map: "survey_v2_responseDetail_choiceId_fkey")
+  surveyQuestionOption surveyQuestionOption? @relation(fields: [optionId], references: [id], map: "survey_v2_responseDetail_optionId_fkey")
+  surveyQuestion       surveyQuestion        @relation(fields: [questionId], references: [id], map: "survey_v2_responseDetail_questionId_fkey")
+  surveyResponse       surveyResponse        @relation(fields: [responseId], references: [id], map: "survey_v2_responseDetail_responseId_fkey")
+
+  @@index([choiceId], map: "survey_v2_responseDetail_choiceId_fkey")
+  @@index([optionId], map: "survey_v2_responseDetail_optionId_fkey")
+  @@index([questionId], map: "survey_v2_responseDetail_questionId_fkey")
+  @@index([responseId], map: "survey_v2_responseDetail_responseId_fkey")
+}
+
+model survey_v1 {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  key       String   @default("")
+  userId    String   @default("")
+  email     String?
+  data      String   @db.LongText
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  updatedAt DateTime @default(now()) @db.DateTime(0)
+  submit    Int?     @default(1) @db.TinyInt
+}
+
+model user {
+  id                  String            @id
+  isSubscriber        Boolean           @default(false)
+  subscribedType      String?
+  plan                String?
+  product             String?
+  subscriptionStartAt DateTime?
+  nextBillingAt       DateTime?
+  name                String?
+  email               String?           @unique
+  emailVerified       DateTime?
+  password            String?           @db.Text
+  salt                String?           @db.Text
+  providerId          String?           @db.Text
+  image               String?
+  country             String?           @db.Text
+  platform            String?           @db.Text
+  language            String?           @db.Text
+  uuid                String?           @db.Text
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime
+  inquiries           Int               @default(0)
+  has_newsletter      Boolean           @default(false)
+  expired             Boolean           @default(false)
+  composeCount        Int               @default(0)
+  melodyPlayCount     Int               @default(0)
+  feedbackStep        Int               @default(0)
+  subscribed          Boolean           @default(false)
+  subscriptionDetail  String?           @db.LongText
+  trialStartAt        DateTime          @default(now())
+  visitAt             DateTime?         @default(now()) @db.DateTime(0)
+  agreeToAd           Boolean           @default(true)
+  agreeToRenew        Boolean           @default(true)
+  state               String?           @db.Text
+  credit              Int               @default(30)
+  bonusCredit         Int               @default(0)
+  voucher             Boolean           @default(false)
+  paidCredit          Int?              @default(500)
+  dailyComposeCount   Int               @default(1)
+  dailyConst          Int               @default(0)
+  account             account[]
+  musiaoneRequest     musiaoneRequest[]
+  notice              notice[]
+  session             session[]
+
+  @@index([email], map: "email_idx")
+  @@fulltext([id, email, name, providerId, country, platform, language, uuid], map: "textIndex")
+}
+
+model user_project {
+  id               Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  userId           String    @default("")
+  email            String?
+  projectId        String    @unique(map: "projectId_UNIQUE")
+  title            String?   @db.VarChar(64)
+  bpm              Int?
+  scale            String?   @db.LongText
+  soloTrack        Int?
+  neverAskAgain    String?   @db.LongText
+  zoom             String?   @db.LongText
+  notes            String?   @db.LongText
+  regions          String?   @db.LongText
+  tracks           String?   @db.LongText
+  chordProgression String?   @db.LongText
+  createdAt        DateTime? @default(now()) @db.DateTime(0)
+  updatedAt        DateTime? @default(now()) @db.DateTime(0)
+}
+
+model verificationPassword {
+  id         String   @id
+  name       String
+  identifier String   @unique
+  providerId String
+  password   String   @db.Text
+  salt       String   @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+}
+
+model visitRecord {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  email     String?
+  ip        String?
+  country   String?
+  language  String?
+  platform  String?
+  event     String    @default("")
+  visitDate DateTime? @db.Timestamp(0)
+}
+
+model visitorTracking {
+  id            Int      @id @default(autoincrement()) @db.UnsignedInt
+  email         String?  @db.Text
+  ip            String?  @db.LongText
+  country       String?  @db.Text
+  language      String?  @db.Text
+  platform      String?  @db.Text
+  call_sendLink Int      @default(0) @db.TinyInt
+  visitPage     Int?     @default(0) @db.TinyInt
+  profilePage   Int?     @default(0) @db.TinyInt
+  download      Int?     @default(0) @db.TinyInt
+  complete      Int?     @default(0) @db.TinyInt
+  incolplete    Int?     @default(1) @db.TinyInt
+  initDate      DateTime @default(now()) @db.Timestamp(0)
+  lastVisitDate DateTime @default(now()) @db.Timestamp(0)
+}
+
+model voucher {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  userId    String?
+  email     String?   @db.Text
+  code      String    @unique
+  type      String    @db.Text
+  value     String    @db.LongText
+  source    String    @db.LongText
+  usedAt    DateTime?
+  createdAt DateTime  @default(now()) @db.DateTime(0)
+  redeem    Boolean   @default(false)
+  used      Boolean   @default(false)
+  expired   Boolean   @default(false)
+  expiredAt DateTime? @db.DateTime(0)
+  plan      String?   @db.Text
+  product   String?   @db.Text
+}
+
+model youtube {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  uid       String?  @db.Text
+  name      String?  @db.Text
+  url       String?  @db.Text
+  utm       String?  @db.Text
+  createdAt DateTime @default(now()) @db.DateTime(0)
+}
+
+enum notice_status {
+  ACTIVE
+  INACTIVE
+}
