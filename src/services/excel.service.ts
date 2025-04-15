@@ -14,7 +14,7 @@ export async function importExcel(filePath: string) {
   const userSheet = workbook.getWorksheet('Sheet1');
   if(!userSheet) return;
 
-  for (let i = 3; i <= 5; i++) {
+  for (let i = 3; i <= userSheet.rowCount; i++) {
     const row = userSheet.getRow(i);
     const rawFolderPath = cleanPath(row.getCell('B').value);
     const rawFileName = cleanPath(row.getCell('C').value);
