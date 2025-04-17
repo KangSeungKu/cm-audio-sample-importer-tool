@@ -59,7 +59,7 @@ model audioSample {
   artist               String?
   album                String?
   version              String?
-  duration             Int?
+  duration             Float?
   fileName             String?
   url                  String?
   key                  String?
@@ -78,7 +78,7 @@ model audioSampleSubFilter {
   subFilter     subFilter   @relation(fields: [subFilterId], references: [id])
 
   @@id([audioSampleId, subFilterId])
-  @@index([subFilterId], map: "audioSampleSubFilter_subFilterId_fkey")
+  @@index([subFilterId, audioSampleId])
 }
 
 model basicMode_project {
@@ -228,12 +228,13 @@ model feedbacks_cancelled {
 }
 
 model filterCategory {
-  id        Int         @id @default(autoincrement())
-  type      String      @unique
-  name      String?
-  order     Int?
-  isActive  Boolean     @default(true)
-  subFilter subFilter[]
+  id                        Int                         @id @default(autoincrement())
+  type                      String                      @unique
+  name                      String?
+  order                     Int?
+  isActive                  Boolean                     @default(true)
+  filterCategoryTranslation filterCategoryTranslation[]
+  subFilter                 subFilter[]
 }
 
 model inquiry {
@@ -358,8 +359,10 @@ model subFilter {
   isActive             Boolean                @default(true)
   audioSampleSubFilter audioSampleSubFilter[]
   filterCategory       filterCategory         @relation(fields: [categoryId], references: [id])
+  subFilterTranslation subFilterTranslation[]
 
   @@index([categoryId], map: "subFilter_categoryId_fkey")
+  @@index([type], map: "idx_sf_type")
 }
 
 model subscription {
@@ -658,6 +661,28 @@ model youtube {
   url       String?  @db.Text
   utm       String?  @db.Text
   createdAt DateTime @default(now()) @db.DateTime(0)
+}
+
+model filterCategoryTranslation {
+  id               Int            @id @default(autoincrement())
+  locale           String
+  name             String
+  filterCategoryId Int
+  filterCategory   filterCategory @relation(fields: [filterCategoryId], references: [id])
+
+  @@unique([locale, filterCategoryId])
+  @@index([filterCategoryId], map: "filterCategoryTranslation_filterCategoryId_fkey")
+}
+
+model subFilterTranslation {
+  id          Int       @id @default(autoincrement())
+  locale      String
+  name        String
+  subFilterId Int
+  subFilter   subFilter @relation(fields: [subFilterId], references: [id])
+
+  @@unique([locale, subFilterId])
+  @@index([subFilterId], map: "subFilterTranslation_subFilterId_fkey")
 }
 
 enum notice_status {

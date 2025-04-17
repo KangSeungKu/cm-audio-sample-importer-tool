@@ -14,7 +14,7 @@ export async function importExcel(filePath: string) {
   const userSheet = workbook.getWorksheet('Sheet1');
   if(!userSheet) return;
 
-  for (let i = 3; i <= 5; i++) {
+  for (let i = 3; i <= userSheet.rowCount; i++) {
     const row = userSheet.getRow(i);
     const rawFolderPath = cleanPath(row.getCell('B').value);
     const rawFileName = cleanPath(row.getCell('C').value);
@@ -26,6 +26,7 @@ export async function importExcel(filePath: string) {
     // https://d3uzxe4z0iimhg.cloudfront.net/sound-library/Future_Rave/samples/[bgnoise_noise 01]bpm=128,bar=8.ogg
     const projectRoot = path.resolve(__dirname, '../../..'); // src 폴더 기준 한 단계 위
     const audioBasePath = path.join(projectRoot, 'audio_library');
+    const filename = path.parse(rawFileName).name;
     const fullPath = path.resolve(audioBasePath, rawFolderPath, rawFileName);
     const url = path.join('sound-library', rawFolderPath, rawFileName);
 
@@ -46,12 +47,11 @@ export async function importExcel(filePath: string) {
       console.error(`⚠️ [${rawFileName}] duration 분석 실패`);
       logger.error(`⚠️ [${rawFileName}] duration 분석 실패: ${error}`);
     }
-
     const audioSample = await prisma.audioSample.create({
       data: {
         title: rawFileName,
         url,
-        fileName: rawFileName,
+        fileName: filename,
         duration,
         key: key ? String(key) : undefined,
         bpm: Number(bpm),

@@ -31,7 +31,14 @@ export async function analyzeAudio(inputPath: string): Promise<{ duration: numbe
   const duration = await new Promise<number>((resolve, reject) => {
     ffmpeg.ffprobe(tempWavPath, (err, metadata) => {
       if (err) return reject(err);
-      resolve(metadata.format.duration || 0);
+
+      const formatDuration = metadata.format.duration ?? 0;
+      const streamDuration = metadata.streams?.[0]?.duration
+        ? parseFloat(metadata.streams[0].duration)
+        : 0;
+      const finalDuration = Math.max(formatDuration, streamDuration);
+
+      resolve(Number(finalDuration)); // 소수점 포함 정확도 유지
     });
   });
 
